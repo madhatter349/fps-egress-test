@@ -1,0 +1,22 @@
+name: solve2
+on: workflow_dispatch
+jobs:
+  solve2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: deps
+        run: |
+          pip install --quiet curl_cffi 2>&1 | tail -1
+          python3 -V
+          curl -s -m 10 https://api.ipify.org; echo
+      - name: probe
+        run: |
+          python3 - <<'PY'
+          from curl_cffi import requests
+          ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36'
+          s = requests.Session(impersonate='chrome152')
+          r = s.get('https://www.fastpeoplesearch.com/212-862-9173', headers={'User-Agent': ua}, timeout=40)
+          print('challenge status:', r.status_code, 'len:', len(r.text), 'mitigated:', r.headers.get('cf-mitigated'))
+          print('has cf_chl_opt:', '_cf_chl_opt' in r.text, 'has Data:', 'Olivia Coakley' in r.text)
+          print('title:', (r.text.split('<title>')[1].split('</title>')[0] if '<title>' in r.text else '')[:80])
+          PY

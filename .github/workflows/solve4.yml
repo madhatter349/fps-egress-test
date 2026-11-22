@@ -1,0 +1,33 @@
+name: solve4
+on: workflow_dispatch
+jobs:
+  solve4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: deps
+        run: |
+          npm install --silent jsdom@24 2>&1 | tail -2
+          pip install --quiet curl_cffi 2>&1 | tail -1
+          curl -s -m 10 https://api.ipify.org; echo
+      - name: solve
+        env:
+          CF_DEBUG: '1'
+          CF_BRIDGE_TIMEOUT_MS: '240000'
+        run: |
+          cat > ./solve.mjs <<'JS'
+          import { solveLive, fetchWithClearance } from './src/solver.mjs';
+          const url = 'https://www.fastpeoplesearch.com/212-862-9173';
+          const t0 = Date.now();
+          try {
+            const r = await solveLive(url);
+            console.log('solveLive result:', r ? JSON.stringify({clearance: r.clearance ? r.clearance.length : null, status: r.status}) : null, 'ms', Date.now()-t0);
+            if (r && r.clearance) {
+              const p = await fetchWithClearance(url, r.clearance);
+              console.log('fetch:', p.status, (p.body||'').length, /Olivia Coakley/.test(p.body||''));
+            }
+          } catch (e) { console.log('error:', String(e).slice(0, 400), 'ms', Date.now()-t0); }
+          JS
+          timeout 280 node ./solve.mjs 2>&1 | tail -40

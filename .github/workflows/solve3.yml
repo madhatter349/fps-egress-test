@@ -1,0 +1,17 @@
+name: solve3
+on: workflow_dispatch
+jobs:
+  solve3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: deps
+        run: pip install --quiet curl_cffi 2>&1 | tail -1
+      - name: transport
+        run: |
+          set -x
+          U="https://www.fastpeoplesearch.com/212-862-9173"
+          python3 scripts/cf_transport.py challenge "$U" /tmp/state.json; echo "challenge exit=$?"
+          ls -la /tmp/state.json 2>/dev/null || true
+          python3 -c "import json;d=json.load(open('/tmp/state.json'));print('state keys:',list(d.keys()));print('status:',d.get('status'),'has_chl:',bool(d.get('cH')))" 2>&1 | head -5
+          python3 scripts/cf_transport.py fetch /tmp/state.json "$U" 2>&1 | tail -10; echo "fetch exit=$?"

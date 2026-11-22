@@ -17,7 +17,7 @@ jobs:
           echo "runner ip: $(curl -s -m 10 https://api.ipify.org)"
       - name: solve
         run: |
-          cat > /tmp/solve.mjs <<'JS'
+          cat > ./solve.mjs <<'JS'
           import { solveLive, fetchWithClearance } from './src/solver.mjs';
           const url = 'https://www.fastpeoplesearch.com/212-862-9173';
           try {
@@ -29,4 +29,4 @@ jobs:
             }
           } catch (e) { console.log('error:', String(e).slice(0, 300)); }
           JS
-          timeout 300 node /tmp/solve.mjs 2>&1 | tail -30
+          timeout 300 node ./solve.mjs 2>&1 | tail -30

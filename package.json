@@ -1,0 +1,11 @@
+{
+  "name": "cf-solver",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-force-exit test/*.test.mjs"
+  },
+  "dependencies": {
+    "jsdom": "^24.1.3"
+  }
+}

@@ -1,0 +1,32 @@
+name: solve
+on: workflow_dispatch
+jobs:
+  solve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: deps
+        run: |
+          npm install --silent jsdom@24 2>&1 | tail -2
+          pip install --quiet curl_cffi 2>&1 | tail -2
+          echo "node $(node -v) python $(python3 -V)"
+          echo "runner ip: $(curl -s -m 10 https://api.ipify.org)"
+      - name: solve
+        run: |
+          cat > /tmp/solve.mjs <<'JS'
+          import { solveLive, fetchWithClearance } from './src/solver.mjs';
+          const url = 'https://www.fastpeoplesearch.com/212-862-9173';
+          try {
+            const r = await solveLive(url);
+            console.log('solveLive:', JSON.stringify(r).slice(0, 400));
+            if (r && r.clearance) {
+              const p = await fetchWithClearance(url, r.clearance);
+              console.log('fetch:', p.status, (p.body||'').length, /Olivia Coakley/.test(p.body||''));
+            }
+          } catch (e) { console.log('error:', String(e).slice(0, 300)); }
+          JS
+          timeout 300 node /tmp/solve.mjs 2>&1 | tail -30

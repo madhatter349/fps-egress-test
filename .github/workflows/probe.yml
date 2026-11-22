@@ -1,0 +1,19 @@
+name: probe
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+          for u in "https://www.fastpeoplesearch.com/" "https://www.fastpeoplesearch.com/212-862-9173" "https://www.fastpeoplesearch.com/718-901-0641"; do
+            code=$(curl -s -m 25 -o /tmp/out.html -w "%{http_code}" -A "$UA" "$u")
+            echo "=== $u -> HTTP $code"
+            grep -o "<title>[^<]*</title>" /tmp/out.html | head -1 || true
+            grep -o 'cf-cache-status: [^ ]*' /tmp/out.html | head -1 || true
+            head -c 200 /tmp/out.html | tr '\n' ' '
+            echo
+          done
+          echo "=== runner IP ==="
+          curl -s -m 10 https://api.ipify.org

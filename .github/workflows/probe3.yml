@@ -1,0 +1,29 @@
+name: probe3
+on: workflow_dispatch
+jobs:
+  chrome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: real chrome probe
+        shell: bash
+        run: |
+          set -x
+          which google-chrome chromium chromium-browser 2>/dev/null
+          google-chrome --version 2>/dev/null || chromium --version 2>/dev/null
+          echo "runner ip: $(curl -s -m 10 https://api.ipify.org)"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+          rm -rf /tmp/cd; mkdir -p /tmp/cd
+          timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+            --user-data-dir=/tmp/cd --virtual-time-budget=25000 --timeout=30000 \
+            --user-agent="$UA" --dump-dom "https://www.fastpeoplesearch.com/212-862-9173" > /tmp/dom.html 2>/tmp/chrome.err || echo "chrome exit $?"
+          echo "dom bytes: $(wc -c </tmp/dom.html)"
+          grep -o '<title>[^<]*</title>' /tmp/dom.html | head -2
+          grep -c 'Olivia Coakley' /tmp/dom.html || true
+          grep -o 'Security Challenge' /tmp/dom.html | head -1
+          tail -5 /tmp/chrome.err
+          echo '--- second pass with existing profile (cookies)'
+          timeout 90 google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+            --user-data-dir=/tmp/cd --virtual-time-budget=25000 \
+            --user-agent="$UA" --dump-dom "https://www.fastpeoplesearch.com/212-862-9173" > /tmp/dom2.html 2>/dev/null || true
+          echo "dom2 bytes: $(wc -c </tmp/dom2.html)"; grep -o '<title>[^<]*</title>' /tmp/dom2.html | head -2
+          grep -c 'Olivia Coakley' /tmp/dom2.html || true
